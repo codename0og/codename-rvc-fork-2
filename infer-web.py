@@ -1749,7 +1749,7 @@ try:
             max_threads=511,
             server_name="0.0.0.0",
             inbrowser=not config.noautoopen,
-            server_port=config.listen_port,
+            server_port=7897, # config.listen_port
             quiet=True,
         )
 except Exception as e:
