@@ -59,3 +59,4 @@ sox==1.4.1
 soxr==0.3.7
 nnaudio==0.3.3
 einops==0.8.0
+requests==2.31.0
