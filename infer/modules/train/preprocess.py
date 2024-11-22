@@ -50,15 +50,17 @@ class PreProcess:
         # Initialize other parameters
         self.slicer = Slicer(
             sr=sr,
-            threshold=-100,
-            min_length=3000,
-            min_interval=1000,
+            threshold=-42,
+            min_length=1500,
+            min_interval=400,
             hop_size=15,
-            max_sil_kept=3000,
+            max_sil_kept=500,
         )
         self.sr = sr
         self.bh, self.ah = signal.butter(N=5, Wn=48, btype="high", fs=self.sr)
         self.per = per
+        self.overlap = 0.3
+        self.tail = self.per + self.overlap
         self.sr_trgt = sr_trgt
 
     def norm_write(self, tmp_audio, idx0, idx1):
@@ -98,23 +100,24 @@ class PreProcess:
         try:
             audio = load_audio(path, self.sr_trgt)
             # Apply high-pass filter
+
             audio = signal.lfilter(self.bh, self.ah, audio)
 
             idx1 = 0
             for audio in self.slicer.slice(audio):
-                start = 0
-                while start + int(self.per * self.sr_trgt) <= len(audio):
-                    tmp_audio = audio[start : start + int(self.per * self.sr_trgt)]
-                    self.norm_write(tmp_audio, idx0, idx1)
-                    idx1 += 1
-                    start += int(self.per * self.sr_trgt)
-
-                # Handle any remaining audio that doesn't fill the full slice length
-                if start < len(audio):
-                    tmp_audio = audio[start:]
-                    self.norm_write(tmp_audio, idx0, idx1)
-                    idx1 += 1
-
+                i = 0
+                while 1:
+                    start = int(self.sr * (self.per - self.overlap) * i)
+                    i += 1
+                    if len(audio[start:]) > self.tail * self.sr:
+                        tmp_audio = audio[start : start + int(self.per * self.sr)]
+                        self.norm_write(tmp_audio, idx0, idx1)
+                        idx1 += 1
+                    else:
+                        tmp_audio = audio[start:]
+                        idx1 += 1
+                        break
+                self.norm_write(tmp_audio, idx0, idx1)
             println("%s\t-> Success" % path)
         except:
             println("%s\t-> %s" % (path, traceback.format_exc()))
