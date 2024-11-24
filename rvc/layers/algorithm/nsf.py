@@ -5,7 +5,7 @@ from torch.nn.utils.parametrizations import weight_norm
 from typing import Optional
 
 from rvc.layers.algorithm.generators import SineGen
-from rvc.layers.algorithm.residuals import ResBlock1, ResBlock2 #, LRELU_SLOPE
+from rvc.layers.algorithm.residuals import ResBlock1, ResBlock2, LRELU_SLOPE
 from rvc.layers.algorithm.commons import init_weights
 
 
@@ -150,7 +150,7 @@ class GeneratorNSF(torch.nn.Module):
             self.cond = torch.nn.Conv1d(gin_channels, upsample_initial_channel, 1)
 
         self.upp = math.prod(upsample_rates)
-        #self.lrelu_slope = LRELU_SLOPE
+        self.lrelu_slope = LRELU_SLOPE
 
     def forward(self, x, f0, g: Optional[torch.Tensor] = None):
         har_source, _, _ = self.m_source(f0, self.upp)
@@ -161,7 +161,7 @@ class GeneratorNSF(torch.nn.Module):
             x = x + self.cond(g)
 
         for i, (ups, noise_convs) in enumerate(zip(self.ups, self.noise_convs)):
-            x = torch.nn.functional.silu(x) #torch.nn.functional.leaky_relu(x, self.lrelu_slope)
+            x = torch.nn.functional.leaky_relu(x, self.lrelu_slope)
             x = ups(x)
             x = x + noise_convs(har_source)
 
@@ -174,7 +174,7 @@ class GeneratorNSF(torch.nn.Module):
             )
             x = xs / self.num_kernels
 
-        x = torch.nn.functional.silu(x) #torch.nn.functional.leaky_relu(x)
+        x = torch.nn.functional.leaky_relu(x)
         x = torch.tanh(self.conv_post(x))
         return x
 
