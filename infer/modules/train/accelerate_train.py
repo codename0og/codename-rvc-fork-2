@@ -155,7 +155,7 @@ def prepare_data_loaders(config, batch_size, n_gpus, rank):
     # Initializes the train_loader
     train_loader = DataLoader(
         train_dataset,  # Dataset to load
-        num_workers=4,  # Number of CPU threads used for data loading
+        num_workers=8,  # Number of CPU threads used for data loading
         shuffle=False,  # No need for shuffle in here as it's already managed by "train_sampler"
         pin_memory=True,  # Pin memory for faster GPU transfer
         collate_fn=collate_fn,  # "TextAudioCollateMultiNSFsid" Collator
