@@ -110,7 +110,7 @@ def main():
     """
 
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(randint(20000, 55555))
+    os.environ["MASTER_PORT"] = "50000"
 
 
     run(experiment_dir,
